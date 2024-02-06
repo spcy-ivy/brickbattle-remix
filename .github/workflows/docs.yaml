@@ -21,7 +21,7 @@ jobs:
 
       - name: build documentation
         working-directory: ./docs
-        run: npm build
+        run: npm run build
 
       - name: deploy to gitHub pages
         uses: peaceiris/actions-gh-pages@v3

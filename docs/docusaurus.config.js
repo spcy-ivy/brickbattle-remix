@@ -8,7 +8,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Brickers',
+  title: 'Enhanced Brickbattle',
   tagline: 'Design Documentation',
   favicon: 'img/favicon.ico',
 
@@ -21,7 +21,7 @@ const config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'spcy', // Usually your GitHub org/user name.
-  projectName: 'brickers', // Usually your repo name.
+  projectName: 'enhanced-brickbattle', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -66,7 +66,7 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'Brickers',
+        title: 'Enhanced Brickbattle',
         logo: {
           alt: 'My Site Logo',
           src: 'img/logo.svg',

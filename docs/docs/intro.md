@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # What is this?
 
-This is the design documentation for the game "Brickers!"
+This is the design documentation for our enhanced version of brickbattle.
 
 Since this is a fairly ambitious project, we do need to have a clear vision and roadmap for the game before we can proceed with creating it.
 

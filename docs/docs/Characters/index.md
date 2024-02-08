@@ -12,8 +12,8 @@ Here is a list of each character and their inspiration:
 | Bomb | Link |
 | Slingshot | Shiek |
 | Paintball Gun | Fox |
-| Superball | Falco |
-| Jet Boots | Yoshi |
+| Superball | TBD |
+| Jet Boots | Yoshi/Peach |
 | Rocket Launcher | Mostly Original (movement inspired by solider tf2 and ultrakill) |
 | Trowel | Mostly Original |
 | Fists | Mario or Captain Falcon |

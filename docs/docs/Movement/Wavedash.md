@@ -1,0 +1,1 @@
+similar to melee, if you [airdash](Airdash.md) into the floor your momentum should transfer and you should slide a bit while actionable

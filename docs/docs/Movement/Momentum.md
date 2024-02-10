@@ -2,7 +2,7 @@ so theres gonna be some moving platforms here and since wavedashing exists why n
 
 yes, if you
 1. jump off of a moving platform
-2. jump off of your [wavedash]("Wavedash".md)
+2. jump off of your [wavedash](Wavedash.md)
 
 you can keep the momentum and jump farther
 

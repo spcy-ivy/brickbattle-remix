@@ -7,5 +7,3 @@ Combo videos we'll be taking inspiration from is [SquidTheCat's "HIT PARADE"](ht
 This shit is so cool I can't even contain my excitement
 
 We'll still try to chuck in some flashy kill moves like Falcon's knee and Mario's f-air, so you'll still have your cool finishers!!!
-
-Since you need to... well drink for this style to work, I think a sort of resource control system with drinking something would work.

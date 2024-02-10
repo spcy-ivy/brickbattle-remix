@@ -13,3 +13,7 @@ wall tennis aint the only thing you can do tho
 ![shitty trowel momentum example](/img/characters/trowel/shitty-trowel-momentum-example.png)
 
 yeah so basically i just want more aggressive potential from the walls rather than whatever the fuck steve has going on in ultimate lmao
+
+a good example of this is [Rumble VR](https://store.steampowered.com/app/890550/RUMBLE/), a [video from shoeless](https://www.youtube.com/watch?v=Xw8uGQAezm8) actually explains a lot of what we want for trowel and her offensive potential
+
+the walls will be made fragile to encourage aggression and so that filthy fucking campers dont make goddamn forts

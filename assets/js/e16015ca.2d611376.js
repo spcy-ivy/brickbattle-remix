@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkenhanced_brickbattle_design_documentation=self.webpackChunkenhanced_brickbattle_design_documentation||[]).push([[7552],{7616:e=>{e.exports=JSON.parse('{"label":"hola","permalink":"/blog/tags/hola","allTagsPath":"/blog/tags","count":1,"unlisted":false}')}}]);

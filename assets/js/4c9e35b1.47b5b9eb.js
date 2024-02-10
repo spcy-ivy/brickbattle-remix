@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkenhanced_brickbattle_design_documentation=self.webpackChunkenhanced_brickbattle_design_documentation||[]).push([[2512],{632:e=>{e.exports=JSON.parse('{"permalink":"/blog/tags/hola","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

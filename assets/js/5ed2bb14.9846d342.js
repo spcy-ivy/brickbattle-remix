@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkenhanced_brickbattle_design_documentation=self.webpackChunkenhanced_brickbattle_design_documentation||[]).push([[5820],{6792:e=>{e.exports=JSON.parse('{"name":"docusaurus-plugin-content-blog","id":"default"}')}}]);

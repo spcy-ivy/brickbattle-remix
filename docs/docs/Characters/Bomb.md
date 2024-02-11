@@ -7,3 +7,5 @@ Combo videos we'll be taking inspiration from is [Savestate's "Legacy"](https://
 It'll be pretty difficult to transfer since the rest of Link's essential projectiles are being cut, so we'll have to improvise some stuff along the road.
 
 Also since a lot of explosives characters in games are always like crazy people let's just make this guy sane and appropriately terrified of their own bombs lmaoaoaoao
+
+![bomb_v1](/img/characters/bomb/bomb_v1.png)

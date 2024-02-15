@@ -38,6 +38,9 @@
 		},
 		"Workspace": {
 			"$className": "Workspace",
+      "TemporaryMap": {
+        "$path": "assets/TemporaryMap.rbxmx"
+      },
 			"$properties": {
 				"FilteringEnabled": true
 			}

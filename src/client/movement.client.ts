@@ -1,4 +1,4 @@
-import { promiseR6 } from "@rbxts/promise-character";
+import { CharacterRigR6 } from "@rbxts/promise-character";
 import { Players, RunService, UserInputService, Workspace } from "@rbxts/services";
 import { playSound } from "shared/playSound";
 
@@ -15,8 +15,7 @@ const wavedashTimeWindow = 0.1;
 const momentumTimeWindow = 0.2;
 
 const player = Players.LocalPlayer;
-const model = player.Character || player.CharacterAdded.Wait()[0];
-const character = promiseR6(model).expect();
+const character = (player.Character || player.CharacterAdded.Wait()[0]) as CharacterRigR6;
 
 // can we please just assume this exists lmao
 const camera = Workspace.CurrentCamera as Camera;
@@ -24,6 +23,10 @@ const camera = Workspace.CurrentCamera as Camera;
 const characterCastParams = new RaycastParams();
 characterCastParams.FilterType = Enum.RaycastFilterType.Exclude;
 characterCastParams.FilterDescendantsInstances = [character];
+
+// have to wait for character to load hhhhhhhhhhhhh
+// yes this is hacky, i dont give a damn.
+task.wait();
 
 const rootpart = character.HumanoidRootPart;
 const humanoid = character.Humanoid;
@@ -93,7 +96,6 @@ UserInputService.InputBegan.Connect((input, gameProcessed) => {
 			}
 		}
 
-		// TODO: add camera direction
 		if (action === "Airdash") {
 			if (!dashed) {
 				rootpart.ApplyImpulse(

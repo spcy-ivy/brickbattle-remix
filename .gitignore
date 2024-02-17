@@ -3,3 +3,5 @@
 /include
 *.tsbuildinfo
 .env
+build.rbxlx
+.mantle-state.yml

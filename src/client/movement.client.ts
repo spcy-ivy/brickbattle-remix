@@ -1,4 +1,5 @@
 import { Players, RunService, UserInputService, Workspace } from "@rbxts/services";
+import { Bin } from "shared/bin";
 import { playSound } from "shared/playSound";
 import { CharacterRigR6 } from "types/characterRigR6";
 
@@ -26,121 +27,129 @@ const bindings: Map<Action, Enum.KeyCode> = new Map<Action, Enum.KeyCode>([
 const camera = Workspace.CurrentCamera as Camera;
 
 const player = Players.LocalPlayer;
-const character = (player.Character || player.CharacterAdded.Wait()[0]) as CharacterRigR6;
+player.CharacterAppearanceLoaded.Connect((model) => {
+	const character = model as CharacterRigR6;
 
-const characterCastParams = new RaycastParams();
-characterCastParams.FilterType = Enum.RaycastFilterType.Exclude;
-characterCastParams.FilterDescendantsInstances = [character];
+	const characterCastParams = new RaycastParams();
+	characterCastParams.FilterType = Enum.RaycastFilterType.Exclude;
+	characterCastParams.FilterDescendantsInstances = [character];
 
-// have to wait for character to load hhhhhhhhhhhhh
-// yes this is hacky, i dont give a damn.
-task.wait();
+	const rootpart = character.HumanoidRootPart;
+	const humanoid = character.Humanoid;
+	const mass = character
+		.GetChildren()
+		.filter((part): part is BasePart => part.IsA("BasePart"))
+		.reduce((total, part) => total + part.Mass, 0);
 
-const rootpart = character.HumanoidRootPart;
-const humanoid = character.Humanoid;
-const mass = character
-	.GetChildren()
-	.filter((part): part is BasePart => part.IsA("BasePart"))
-	.reduce((total, part) => total + part.Mass, 0);
+	let remainingJumps = jumpAmount;
+	let dashed = false;
+	let fastfalled = false;
+	let canWavedash = false;
+	let momentum = 0;
 
-let remainingJumps = jumpAmount;
-let dashed = false;
-let fastfalled = false;
-let canWavedash = false;
-let momentum = 0;
+	// have this set becuase it checks like every heartbeat and jumping takes time lmao
+	let previousHeartbeatGrounded = false;
 
-// have this set becuase it checks like every heartbeat and jumping takes time lmao
-let previousHeartbeatGrounded = false;
+	humanoid.WalkSpeed = 32;
+	humanoid.JumpPower = 0;
 
-RunService.Heartbeat.Connect(() => {
-	const groundCast = Workspace.Blockcast(
-		rootpart.CFrame,
-		new Vector3(2, 1, 1),
-		Vector3.yAxis.mul(-3 - groundedCheckDistance),
-		characterCastParams,
-	);
+	const bin = Bin();
 
-	const grounded = groundCast !== undefined;
+	humanoid.Died.Connect(() => {
+		bin.empty();
+	});
 
-	if (grounded && !previousHeartbeatGrounded) {
-		remainingJumps = jumpAmount;
-		dashed = false;
-		fastfalled = false;
-
-		if (canWavedash) {
-			rootpart.ApplyImpulse(humanoid.MoveDirection.mul(mass * wavedashSpeed));
-			momentum = 75;
-			task.wait(momentumTimeWindow);
-			momentum = 0;
-		}
-	}
-
-	previousHeartbeatGrounded = grounded;
-});
-
-UserInputService.InputBegan.Connect((input, gameProcessed) => {
-	if (gameProcessed) {
-		return;
-	}
-
-	bindings.forEach((keycode, action) => {
-		if (input.KeyCode !== keycode) {
-			return;
-		}
-
-		if (action === "FastFall") {
-			if (!fastfalled) {
-				rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
-				rootpart.ApplyImpulse(Vector3.yAxis.mul(-mass * fastFallSpeed));
-				fastfalled = true;
-			}
-		}
-
-		if (action === "Airdash") {
-			if (!dashed) {
-				rootpart.ApplyImpulse(
-					humanoid.MoveDirection.mul(dashSpeed * mass).add(
-						Vector3.yAxis.mul(camera.CFrame.LookVector.Y * dashSpeed * mass),
-					),
-				);
-				dashed = true;
-
-				canWavedash = true;
-				task.wait(wavedashTimeWindow);
-				canWavedash = false;
-			}
-		}
-
-		if (action === "Jump") {
-			if (remainingJumps < 1) {
-				return;
-			}
-
-			const walljumpRay = Workspace.Raycast(
-				rootpart.Position,
-				humanoid.MoveDirection.mul(-walljumpCheckDistance),
+	bin.add(
+		RunService.Heartbeat.Connect(() => {
+			const groundCast = Workspace.Blockcast(
+				rootpart.CFrame,
+				new Vector3(2, 1, 1),
+				Vector3.yAxis.mul(-3 - groundedCheckDistance),
 				characterCastParams,
 			);
 
-			rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
+			const grounded = groundCast !== undefined;
 
-			if (walljumpRay) {
-				const sound = playSound("rbxassetid://142245269");
-				sound.TimePosition = 0.1;
+			if (grounded && !previousHeartbeatGrounded) {
+				remainingJumps = jumpAmount;
+				dashed = false;
+				fastfalled = false;
 
-				rootpart.ApplyImpulse(
-					walljumpRay.Normal.mul(mass * walljumpBounceSpeed).add(Vector3.yAxis.mul(mass * jumpSpeed)),
-				);
+				if (canWavedash) {
+					rootpart.ApplyImpulse(humanoid.MoveDirection.mul(mass * wavedashSpeed));
+					momentum = 75;
+					task.wait(momentumTimeWindow);
+					momentum = 0;
+				}
+			}
+
+			previousHeartbeatGrounded = grounded;
+		}),
+	);
+
+	bin.add(
+		UserInputService.InputBegan.Connect((input, gameProcessed) => {
+			if (gameProcessed) {
 				return;
 			}
 
-			rootpart.ApplyImpulse(Vector3.yAxis.mul(mass * jumpSpeed).add(humanoid.MoveDirection.mul(mass * momentum)));
-			remainingJumps--;
-		}
-	});
-});
+			bindings.forEach((keycode, action) => {
+				if (input.KeyCode !== keycode) {
+					return;
+				}
 
-if (humanoid) {
-	humanoid.WalkSpeed = 32;
-	humanoid.JumpPower = 0;
-}
+				if (action === "FastFall") {
+					if (!fastfalled) {
+						rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
+						rootpart.ApplyImpulse(Vector3.yAxis.mul(-mass * fastFallSpeed));
+						fastfalled = true;
+					}
+				}
+
+				if (action === "Airdash") {
+					if (!dashed) {
+						rootpart.ApplyImpulse(
+							humanoid.MoveDirection.mul(dashSpeed * mass).add(
+								Vector3.yAxis.mul(camera.CFrame.LookVector.Y * dashSpeed * mass),
+							),
+						);
+						dashed = true;
+
+						canWavedash = true;
+						task.wait(wavedashTimeWindow);
+						canWavedash = false;
+					}
+				}
+
+				if (action === "Jump") {
+					if (remainingJumps < 1) {
+						return;
+					}
+
+					const walljumpRay = Workspace.Raycast(
+						rootpart.Position,
+						humanoid.MoveDirection.mul(-walljumpCheckDistance),
+						characterCastParams,
+					);
+
+					rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
+
+					if (walljumpRay) {
+						const sound = playSound("rbxassetid://142245269");
+						sound.TimePosition = 0.1;
+
+						rootpart.ApplyImpulse(
+							walljumpRay.Normal.mul(mass * walljumpBounceSpeed).add(Vector3.yAxis.mul(mass * jumpSpeed)),
+						);
+						return;
+					}
+
+					rootpart.ApplyImpulse(
+						Vector3.yAxis.mul(mass * jumpSpeed).add(humanoid.MoveDirection.mul(mass * momentum)),
+					);
+					remainingJumps--;
+				}
+			});
+		}),
+	);
+});

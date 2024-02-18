@@ -1,5 +1,5 @@
-import { CharacterRigR6 } from "@rbxts/promise-character";
 import { CollectionService, Players, RunService } from "@rbxts/services";
+import { CharacterRigR6 } from "types/characterRigR6";
 
 const player = Players.LocalPlayer;
 const character = (player.Character || player.CharacterAdded.Wait()[0]) as CharacterRigR6;

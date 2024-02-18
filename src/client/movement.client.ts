@@ -1,6 +1,6 @@
-import { CharacterRigR6 } from "@rbxts/promise-character";
 import { Players, RunService, UserInputService, Workspace } from "@rbxts/services";
 import { playSound } from "shared/playSound";
+import { CharacterRigR6 } from "types/characterRigR6";
 
 const fastFallSpeed = 50;
 const jumpSpeed = 60;
@@ -14,11 +14,19 @@ const walljumpCheckDistance = 3;
 const wavedashTimeWindow = 0.1;
 const momentumTimeWindow = 0.2;
 
-const player = Players.LocalPlayer;
-const character = (player.Character || player.CharacterAdded.Wait()[0]) as CharacterRigR6;
+type Action = "FastFall" | "Airdash" | "Jump";
 
+const bindings: Map<Action, Enum.KeyCode> = new Map<Action, Enum.KeyCode>([
+	["FastFall", Enum.KeyCode.Q],
+	["Airdash", Enum.KeyCode.F],
+	["Jump", Enum.KeyCode.Space],
+]);
+//
 // can we please just assume this exists lmao
 const camera = Workspace.CurrentCamera as Camera;
+
+const player = Players.LocalPlayer;
+const character = (player.Character || player.CharacterAdded.Wait()[0]) as CharacterRigR6;
 
 const characterCastParams = new RaycastParams();
 characterCastParams.FilterType = Enum.RaycastFilterType.Exclude;
@@ -34,14 +42,6 @@ const mass = character
 	.GetChildren()
 	.filter((part): part is BasePart => part.IsA("BasePart"))
 	.reduce((total, part) => total + part.Mass, 0);
-
-type Action = "FastFall" | "Airdash" | "Jump";
-
-const bindings: Map<Action, Enum.KeyCode> = new Map<Action, Enum.KeyCode>([
-	["FastFall", Enum.KeyCode.Q],
-	["Airdash", Enum.KeyCode.F],
-	["Jump", Enum.KeyCode.Space],
-]);
 
 let remainingJumps = jumpAmount;
 let dashed = false;

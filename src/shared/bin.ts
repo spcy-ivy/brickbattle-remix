@@ -7,7 +7,6 @@ export function Bin() {
 
 	return {
 		add: (item: BinItem) => bin.push(item),
-
 		empty: () => {
 			bin.forEach((item) => {
 				if (typeIs(item, "Instance")) {

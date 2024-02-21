@@ -1,3 +1,5 @@
+// TODO create custom signal implementation and make it so that a centralized input system relies on signals
+
 import { Players, RunService, UserInputService, Workspace } from "@rbxts/services";
 import { Bin } from "shared/bin";
 import { playSound } from "shared/playSound";

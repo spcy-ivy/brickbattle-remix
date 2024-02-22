@@ -1,8 +1,8 @@
 import { Players, RunService, Workspace } from "@rbxts/services";
 import { Bin } from "shared/bin";
 import { playSound } from "shared/playSound";
-import { Signal } from "shared/signal";
 import { CharacterRigR6 } from "types/characterRigR6";
+import { actionSignal } from "./signals";
 
 const fastFallSpeed = 50;
 const jumpSpeed = 60;
@@ -16,9 +16,8 @@ const walljumpCheckDistance = 3;
 const wavedashTimeWindow = 0.1;
 const momentumTimeWindow = 0.2;
 
-type Action = "FastFall" | "Airdash" | "Jump";
+export type MovementAction = "FastFall" | "Airdash" | "Jump" | "None";
 
-export const actionSignal = Signal<Action>();
 const bin = Bin();
 
 // can we please just assume this exists lmao

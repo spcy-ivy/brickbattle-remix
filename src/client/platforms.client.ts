@@ -1,8 +1,16 @@
 import { CollectionService, Players, RunService } from "@rbxts/services";
 import { Bin } from "shared/bin";
 import { CharacterRigR6 } from "types/characterRigR6";
+import { MovementAction } from "./movement.client";
+import { actionSignal } from "./signals";
 
 const player = Players.LocalPlayer;
+let currentAction: MovementAction = "None";
+
+// yeah i know stupid code what are you gonna do about it tho
+actionSignal.connect((action) => {
+	currentAction = action;
+});
 
 const jumpThroughParts = CollectionService.GetTagged("jump_through").reduce((accumulator, instance) => {
 	if (!instance.IsA("BasePart")) {
@@ -24,11 +32,16 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 		bin.empty();
 	});
 
-	// TODO: fall through the platform when pressing down
 	bin.add(
 		RunService.Stepped.Connect(() => {
 			jumpThroughParts.forEach((part) => {
-				part.CanCollide = rootpart.Position.Y > part.Position.Y + 1;
+				print(currentAction);
+
+				if (currentAction === "FastFall") {
+					part.CanCollide = false;
+				} else {
+					part.CanCollide = rootpart.Position.Y > part.Position.Y + 1;
+				}
 			});
 		}),
 	);

@@ -2,25 +2,51 @@
 // taken from https://github.com/Sleitnick/rbxts-beacon/blob/main/src/index.ts#L141
 // and https://github.com/red-blox/Util/blob/main/libs/Signal/Signal.luau
 
+import { Spawn } from "./spawn";
+
 type SignalParams<T> = Parameters<
 	T extends unknown[] ? (...args: T) => never : T extends unknown ? (arg: T) => never : () => never
 >;
 type SignalCallback<T> = (...args: SignalParams<T>) => unknown;
 type SignalWait<T> = T extends unknown[] ? LuaTuple<T> : T;
 
-export function Signal<T extends unknown[] | unknown>() {
-	const callbacks: SignalCallback<T>[] = [];
+type SignalNode<T extends unknown | unknown[]> = {
+	next?: SignalNode<T>;
+	callback: SignalCallback<T>;
+};
+
+export function Signal<T extends unknown | unknown[]>() {
+	let root: SignalNode<T> | undefined = undefined;
 
 	const connect = (callback: SignalCallback<T>) => {
-		const index = callbacks.push(callback);
+		const node: SignalNode<T> = {
+			next: root,
+			callback: callback,
+		};
+
+		root = node;
 
 		return () => {
-			callbacks.remove(index);
+			if (root === node) {
+				root = node.next;
+				return;
+			}
+
+			let current = root;
+
+			while (current) {
+				if (current.next === node) {
+					current.next = node.next;
+					break;
+				}
+
+				current = current.next;
+			}
 		};
 	};
 
-	// sorry cant name it wait yeah i know its uncomfortable but please shut up
-	const signalWait = () => {
+	// sorry kids i have to make this the name
+	function signalWait() {
 		const thread = coroutine.running();
 
 		const disconnect = connect((...args) => {
@@ -29,26 +55,32 @@ export function Signal<T extends unknown[] | unknown>() {
 		});
 
 		return coroutine.yield() as SignalWait<T>;
-	};
+	}
 
-	const once = (callback: SignalCallback<T>) => {
+	function once(callback: SignalCallback<T>) {
 		const disconnect = connect((...args) => {
 			disconnect();
 			callback(...args);
 		});
-	};
 
-	const fire = (...args: SignalParams<T>) => {
-		callbacks.forEach((callback) => {
-			task.spawn(callback, ...args);
-		});
-	};
+		return disconnect;
+	}
 
-	const disconnectAll = () => {
-		callbacks.clear();
-	};
+	function fire(...args: SignalParams<T>) {
+		let current = root;
+
+		while (current) {
+			Spawn(current.callback, ...args);
+			current = current.next;
+		}
+	}
+
+	function disconnectAll() {
+		root = undefined;
+	}
 
 	return {
+		root: root,
 		connect: connect,
 		wait: signalWait,
 		once: once,

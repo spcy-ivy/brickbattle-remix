@@ -24,7 +24,7 @@ const bindings: Map<Action, Enum.KeyCode> = new Map<Action, Enum.KeyCode>([
 	["Airdash", Enum.KeyCode.F],
 	["Jump", Enum.KeyCode.Space],
 ]);
-//
+
 // can we please just assume this exists lmao
 const camera = Workspace.CurrentCamera as Camera;
 

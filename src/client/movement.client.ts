@@ -1,8 +1,7 @@
-// TODO create custom signal implementation and make it so that a centralized input system relies on signals
-
-import { Players, RunService, UserInputService, Workspace } from "@rbxts/services";
+import { Players, RunService, Workspace } from "@rbxts/services";
 import { Bin } from "shared/bin";
 import { playSound } from "shared/playSound";
+import { Signal } from "shared/signal";
 import { CharacterRigR6 } from "types/characterRigR6";
 
 const fastFallSpeed = 50;
@@ -19,11 +18,8 @@ const momentumTimeWindow = 0.2;
 
 type Action = "FastFall" | "Airdash" | "Jump";
 
-const bindings: Map<Action, Enum.KeyCode> = new Map<Action, Enum.KeyCode>([
-	["FastFall", Enum.KeyCode.Q],
-	["Airdash", Enum.KeyCode.F],
-	["Jump", Enum.KeyCode.Space],
-]);
+export const actionSignal = Signal<Action>();
+const bin = Bin();
 
 // can we please just assume this exists lmao
 const camera = Workspace.CurrentCamera as Camera;
@@ -54,8 +50,6 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 
 	humanoid.WalkSpeed = 32;
 	humanoid.JumpPower = 0;
-
-	const bin = Bin();
 
 	humanoid.Died.Connect(() => {
 		bin.empty();
@@ -90,68 +84,58 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 	);
 
 	bin.add(
-		UserInputService.InputBegan.Connect((input, gameProcessed) => {
-			if (gameProcessed) {
-				return;
+		actionSignal.connect((action) => {
+			if (action === "FastFall") {
+				if (!fastfalled) {
+					rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
+					rootpart.ApplyImpulse(Vector3.yAxis.mul(-mass * fastFallSpeed));
+					fastfalled = true;
+				}
 			}
 
-			bindings.forEach((keycode, action) => {
-				if (input.KeyCode !== keycode) {
+			if (action === "Airdash") {
+				if (!dashed) {
+					rootpart.ApplyImpulse(
+						humanoid.MoveDirection.mul(dashSpeed * mass).add(
+							Vector3.yAxis.mul(camera.CFrame.LookVector.Y * dashSpeed * mass),
+						),
+					);
+					dashed = true;
+
+					canWavedash = true;
+					task.wait(wavedashTimeWindow);
+					canWavedash = false;
+				}
+			}
+
+			if (action === "Jump") {
+				if (remainingJumps < 1) {
 					return;
 				}
 
-				if (action === "FastFall") {
-					if (!fastfalled) {
-						rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
-						rootpart.ApplyImpulse(Vector3.yAxis.mul(-mass * fastFallSpeed));
-						fastfalled = true;
-					}
-				}
+				const walljumpRay = Workspace.Raycast(
+					rootpart.Position,
+					humanoid.MoveDirection.mul(-walljumpCheckDistance),
+					characterCastParams,
+				);
 
-				if (action === "Airdash") {
-					if (!dashed) {
-						rootpart.ApplyImpulse(
-							humanoid.MoveDirection.mul(dashSpeed * mass).add(
-								Vector3.yAxis.mul(camera.CFrame.LookVector.Y * dashSpeed * mass),
-							),
-						);
-						dashed = true;
+				rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
 
-						canWavedash = true;
-						task.wait(wavedashTimeWindow);
-						canWavedash = false;
-					}
-				}
-
-				if (action === "Jump") {
-					if (remainingJumps < 1) {
-						return;
-					}
-
-					const walljumpRay = Workspace.Raycast(
-						rootpart.Position,
-						humanoid.MoveDirection.mul(-walljumpCheckDistance),
-						characterCastParams,
-					);
-
-					rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
-
-					if (walljumpRay) {
-						const sound = playSound("rbxassetid://142245269");
-						sound.TimePosition = 0.1;
-
-						rootpart.ApplyImpulse(
-							walljumpRay.Normal.mul(mass * walljumpBounceSpeed).add(Vector3.yAxis.mul(mass * jumpSpeed)),
-						);
-						return;
-					}
+				if (walljumpRay) {
+					const sound = playSound("rbxassetid://142245269");
+					sound.TimePosition = 0.1;
 
 					rootpart.ApplyImpulse(
-						Vector3.yAxis.mul(mass * jumpSpeed).add(humanoid.MoveDirection.mul(mass * momentum)),
+						walljumpRay.Normal.mul(mass * walljumpBounceSpeed).add(Vector3.yAxis.mul(mass * jumpSpeed)),
 					);
-					remainingJumps--;
+					return;
 				}
-			});
+
+				rootpart.ApplyImpulse(
+					Vector3.yAxis.mul(mass * jumpSpeed).add(humanoid.MoveDirection.mul(mass * momentum)),
+				);
+				remainingJumps--;
+			}
 		}),
 	);
 });

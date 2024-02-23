@@ -1,8 +1,8 @@
 import { Workspace } from "@rbxts/services";
-import { Bin } from "shared/bin";
+import { Cleanup } from "shared/cleanup";
 
 export = () => {
-	const bin = Bin();
+	const cleanup = Cleanup();
 
 	print("starting Bin test!");
 
@@ -25,14 +25,14 @@ export = () => {
 	greenPart.Parent = Workspace;
 
 	print("lets add the parts to the bin!");
-	bin.add(redPart);
-	bin.add(bluePart);
-	bin.add(greenPart);
+	cleanup.add(redPart);
+	cleanup.add(bluePart);
+	cleanup.add(greenPart);
 
 	print("lets wait for 5 seconds to make sure that you see the parts");
 	task.delay(5, () => {
 		print("emptying bin!");
-		bin.empty();
+		cleanup.empty();
 
 		print("if this errored, please manually delete the parts before testing again.");
 	});

@@ -1,8 +1,10 @@
 import { CollectionService, Players, RunService } from "@rbxts/services";
-import { Bin } from "shared/bin";
 import { CharacterRigR6 } from "types/characterRigR6";
-import { MovementAction } from "./movement.client";
 import { actionSignal } from "./signals";
+import { Cleanup } from "shared/cleanup";
+import { MovementAction } from "./movement.client";
+
+const renderStepName = "Platforms";
 
 const player = Players.LocalPlayer;
 let currentAction: MovementAction = "None";
@@ -26,23 +28,19 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 	const rootpart = character.HumanoidRootPart;
 	const humanoid = character.Humanoid;
 
-	const bin = Bin();
+	const cleanup = Cleanup();
 
 	humanoid.Died.Connect(() => {
-		bin.empty();
+		cleanup.empty();
 	});
 
-	bin.add(
-		RunService.Stepped.Connect(() => {
-			jumpThroughParts.forEach((part) => {
-				print(currentAction);
+	RunService.BindToRenderStep(renderStepName, Enum.RenderPriority.First.Value, () => {
+		jumpThroughParts.forEach((part) => {
+			part.CanCollide = currentAction === "FastFall" ? false : rootpart.Position.Y > part.Position.Y + 1;
+		});
+	});
 
-				if (currentAction === "FastFall") {
-					part.CanCollide = false;
-				} else {
-					part.CanCollide = rootpart.Position.Y > part.Position.Y + 1;
-				}
-			});
-		}),
-	);
+	cleanup.add(() => {
+		RunService.UnbindFromRenderStep(renderStepName);
+	});
 });

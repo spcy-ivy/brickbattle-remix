@@ -1,8 +1,8 @@
 import { Players, RunService, Workspace } from "@rbxts/services";
-import { Bin } from "shared/bin";
 import { playSound } from "shared/playSound";
 import { CharacterRigR6 } from "types/characterRigR6";
 import { actionSignal } from "./signals";
+import { Cleanup } from "shared/cleanup";
 
 const fastFallSpeed = 50;
 const jumpSpeed = 60;
@@ -18,7 +18,7 @@ const momentumTimeWindow = 0.2;
 
 export type MovementAction = "FastFall" | "Airdash" | "Jump" | "None";
 
-const bin = Bin();
+const cleanup = Cleanup();
 
 // can we please just assume this exists lmao
 const camera = Workspace.CurrentCamera as Camera;
@@ -51,10 +51,10 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 	humanoid.JumpPower = 0;
 
 	humanoid.Died.Connect(() => {
-		bin.empty();
+		cleanup.empty();
 	});
 
-	bin.add(
+	cleanup.add(
 		RunService.Heartbeat.Connect(() => {
 			const groundCast = Workspace.Blockcast(
 				rootpart.CFrame,
@@ -82,7 +82,7 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 		}),
 	);
 
-	bin.add(
+	cleanup.add(
 		actionSignal.connect((action) => {
 			if (action === "FastFall") {
 				if (!fastfalled) {

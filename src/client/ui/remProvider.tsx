@@ -1,9 +1,9 @@
-import React, { createContext, useEffect } from "@rbxts/react";
+import React, { PropsWithChildren, createContext, useEffect } from "@rbxts/react";
 import { map, useCamera, useDebounceState, useEventListener } from "@rbxts/pretty-react-hooks";
 
 //taken from https://github.com/littensy/slither/blob/main/src/client/providers/rem-provider.tsx
 
-export interface RemProviderProps extends React.PropsWithChildren {
+export type RemProviderProps = PropsWithChildren & {
   baseRem?: number;
   remOverride?: number;
   minimumRem?: number;

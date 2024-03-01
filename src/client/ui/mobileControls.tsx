@@ -2,7 +2,7 @@ import React from "@rbxts/react"
 import { useRem } from "./useRem";
 import { actionSignal } from "client/signals";
 
-interface ButtonProps {
+type ButtonProps = {
   size?: number,
   offset?: Vector2,
   imageId?: string,

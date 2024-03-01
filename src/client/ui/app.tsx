@@ -6,7 +6,7 @@ import { useRem } from "./useRem";
 
 // taken from https://github.com/littensy/slither/blob/main/src/client/components/ui/layer.tsx
 
-interface LayerProps extends PropsWithChildren {
+type LayerProps = PropsWithChildren & {
   displayOrder?: number;
 }
 
@@ -18,7 +18,7 @@ function Layer({ displayOrder, children }: LayerProps) {
   )
 }
 
-interface ErrorPageProps {
+type ErrorPageProps = {
   readonly message: unknown;
 }
 

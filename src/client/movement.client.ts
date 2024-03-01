@@ -1,8 +1,8 @@
 import { Players, RunService, Workspace } from "@rbxts/services";
 import { playSound } from "shared/playSound";
 import { CharacterRigR6 } from "types/characterRigR6";
-import { actionSignal } from "./signals";
 import { Cleanup } from "shared/cleanup";
+import { actionSignal } from "./signals";
 
 const fastFallSpeed = 50;
 const jumpSpeed = 60;
@@ -15,8 +15,6 @@ const groundedCheckDistance = 1;
 const walljumpCheckDistance = 3;
 const wavedashTimeWindow = 0.1;
 const momentumTimeWindow = 0.2;
-
-export type MovementAction = "FastFall" | "Airdash" | "Jump" | "None";
 
 const cleanup = Cleanup();
 

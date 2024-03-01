@@ -3,17 +3,17 @@
 import { useCallback, useContext } from "@rbxts/react";
 import { DEFAULT_REM, RemContext } from "./remProvider";
 
-export interface RemOptions {
+export type RemOptions = {
 	minimum?: number;
 	maximum?: number;
-}
+};
 
-interface RemFunction {
+type RemFunction = {
 	(value: number, mode?: RemScaleMode): number;
 	(value: UDim2, mode?: RemScaleMode): UDim2;
 	(value: UDim, mode?: RemScaleMode): UDim;
 	(value: Vector2, mode?: RemScaleMode): Vector2;
-}
+};
 
 type RemScaleMode = "pixel" | "unit";
 

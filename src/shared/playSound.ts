@@ -2,12 +2,12 @@
 
 import { SoundService } from "@rbxts/services";
 
-export interface SoundOptions {
+export type SoundOptions = {
 	volume?: number;
 	speed?: number;
 	looped?: boolean;
 	parent?: Instance;
-}
+};
 
 export function createSound(
 	soundId: string,

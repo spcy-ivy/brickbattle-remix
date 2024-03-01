@@ -15,7 +15,16 @@ type SignalNode<T extends unknown | unknown[]> = {
 	callback: SignalCallback<T>;
 };
 
-export function Signal<T extends unknown | unknown[]>() {
+export type Signal<T> = {
+	root?: SignalNode<T>;
+	connect: (callback: SignalCallback<T>) => () => void;
+	wait: () => void;
+	once: (callback: SignalCallback<T>) => void;
+	fire: (...args: SignalParams<T>) => void;
+	disconnectAll: () => void;
+};
+
+export function signal<T extends unknown | unknown[]>(): Signal<T> {
 	let root: SignalNode<T> | undefined = undefined;
 
 	const connect = (callback: SignalCallback<T>) => {
@@ -46,7 +55,7 @@ export function Signal<T extends unknown | unknown[]>() {
 	};
 
 	// sorry kids i have to make this the name
-	function signalWait() {
+	const signalWait = () => {
 		const thread = coroutine.running();
 
 		const disconnect = connect((...args) => {
@@ -55,29 +64,29 @@ export function Signal<T extends unknown | unknown[]>() {
 		});
 
 		return coroutine.yield() as SignalWait<T>;
-	}
+	};
 
-	function once(callback: SignalCallback<T>) {
+	const once = (callback: SignalCallback<T>) => {
 		const disconnect = connect((...args) => {
 			disconnect();
 			callback(...args);
 		});
 
 		return disconnect;
-	}
+	};
 
-	function fire(...args: SignalParams<T>) {
+	const fire = (...args: SignalParams<T>) => {
 		let current = root;
 
 		while (current) {
 			Spawn(current.callback, ...args);
 			current = current.next;
 		}
-	}
+	};
 
-	function disconnectAll() {
+	const disconnectAll = () => {
 		root = undefined;
-	}
+	};
 
 	return {
 		root: root,

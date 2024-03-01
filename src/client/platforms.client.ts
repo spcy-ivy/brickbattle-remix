@@ -1,13 +1,13 @@
 import { CollectionService, Players, RunService } from "@rbxts/services";
 import { CharacterRigR6 } from "types/characterRigR6";
-import { actionSignal } from "./signals";
 import { Cleanup } from "shared/cleanup";
-import { MovementAction } from "./movement.client";
+import { actionSignal } from "./signals";
+import { FighterAction } from "./inputs.client";
 
 const renderStepName = "Platforms";
 
 const player = Players.LocalPlayer;
-let currentAction: MovementAction = "None";
+let currentAction: FighterAction | undefined = undefined;
 
 // yeah i know stupid code what are you gonna do about it tho
 actionSignal.connect((action) => {

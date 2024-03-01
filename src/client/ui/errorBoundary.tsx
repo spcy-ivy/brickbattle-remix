@@ -2,11 +2,11 @@
 
 import React, { Component, ErrorInfo, ReactComponent } from "@rbxts/react";
 
-interface ErrorBoundaryProps {
+type ErrorBoundaryProps = {
   fallback: (error: unknown) => React.Element;
 }
 
-interface ErrorBoundaryState {
+type ErrorBoundaryState = {
   hasError: boolean;
   message?: unknown;
 }

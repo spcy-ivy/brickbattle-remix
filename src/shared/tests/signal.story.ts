@@ -1,16 +1,16 @@
-import { Signal } from "shared/signal";
+import { signal } from "shared/signal";
 
 export = () => {
-	const signal = Signal<number>();
+	const testSignal = signal<number>();
 
 	print("starting signal test!");
 
 	print("creating connection that prints the argument");
-	const disconnect = signal.connect((n) => print(n));
-	signal.once((n) => print(`this is once but heres the number: ${n}`));
+	const disconnect = testSignal.connect((n) => print(n));
+	testSignal.once((n) => print(`this is once but heres the number: ${n}`));
 
 	print("fire the signal with the number 32");
-	signal.fire(32);
+	testSignal.fire(32);
 
 	print("disconnect it");
 	disconnect();
@@ -18,9 +18,9 @@ export = () => {
 	print("fire again to see if it prints");
 	print("also to check if once worked");
 	task.spawn(() => {
-		signal.wait();
+		testSignal.wait();
 		print("also to check if wait worked");
 	});
 
-	signal.fire(32);
+	testSignal.fire(32);
 };

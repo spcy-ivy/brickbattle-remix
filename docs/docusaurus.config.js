@@ -8,7 +8,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Enhanced Brickbattle',
+  title: 'Brickbattle Remix',
   tagline: 'Design Documentation',
   favicon: 'img/favicon.ico',
 
@@ -16,12 +16,12 @@ const config = {
   url: 'https://spcy-ivy.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/enhanced-brickbattle/',
+  baseUrl: '/brickbattle-remix/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'spcy-ivy', // Usually your GitHub org/user name.
-  projectName: 'enhanced-brickbattle', // Usually your repo name.
+  projectName: 'brickbattle-remix', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -66,7 +66,7 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'Enhanced Brickbattle',
+        title: 'Brickbattle Remix',
         logo: {
           alt: 'My Site Logo',
           src: 'img/logo.svg',

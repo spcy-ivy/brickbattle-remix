@@ -1,7 +1,10 @@
 import { UserInputService } from "@rbxts/services";
 import { actionSignal } from "./signals";
 
+/** The movement and attack actions that the fighter can do. Use `undefined` to specify that none are being used. */
 export type FighterAction = "FastFall" | "Airdash" | "Jump" | "Attack" | "StrongAttack";
+
+/** The direction that actions can use. Use `undefined` to specify that none are being used. */
 type DirectionModifier = "Up" | "Down" | "Left" | "Right" | "Forward" | "Backward";
 
 const actionBindings: Map<FighterAction, Enum.KeyCode> = new Map<FighterAction, Enum.KeyCode>([

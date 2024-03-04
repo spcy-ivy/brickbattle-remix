@@ -4,49 +4,73 @@ import { playSound } from "shared/playSound";
 import { CharacterRigR6 } from "types/characterRigR6";
 import { FighterClient } from "types/fighter";
 
+const groundedCheckDistance = 1;
+const walljumpCheckDistance = 3;
+const wavedashTimeWindow = 0.1;
+const momentumTimeWindow = 0.2;
+
+/**
+ * A type definition for functions that take a character alongside some settings and return a FighterClient.
+ *
+ * @typeParam F - The type of the fighter that gets returned from the function.
+ * @typeParam S - The settings for the fighter.
+ */
 type CharacterInitializer<F extends FighterClient, S extends {}> = (character: CharacterRigR6, settings: S) => F;
 
+/**
+ * The settings for the default movement system.
+ *
+ * @param fastFallSpeed - The downward velocity applied for fast falls.
+ * @param jumpSpeed - The upward velocity applied for jumps.
+ * @param airdashSpeed - The velocity applied for airdashes.
+ * @param walljumpBounceSpeed - The velocity applied for walljumps.
+ * @param wavedashSpeed - The velocity applied for wavedashes.
+ * @param jumpAmount - The amount of jumps the character has.
+ */
 type MovementSettings = {
 	fastFallSpeed: number;
 	jumpSpeed: number;
-	dashSpeed: number;
+	airdashSpeed: number;
 	walljumpBounceSpeed: number;
 	wavedashSpeed: number;
 	jumpAmount: number;
-
-	groundedCheckDistance: number;
-	walljumpCheckDistance: number;
-	wavedashTimeWindow: number;
-	momentumTimeWindow: number;
 };
 
+/**
+ * The default movement template for all other characters.
+ * Intended to be extended.
+ *
+ * @param remainingJumps - The jumps left before the character can't.
+ * @param dashed - Dictates if the player can dash.
+ * @param fastfalled - Dictates if the player can fastfall.
+ * @param canWavedash - Enabled when grounded at a certain timing window.
+ * @param momentum - The velocity applied when the character jumps.
+ * @param previousHeartbeatGrounded - Used because we only want to register if someone is grounded the moment they become grounded.
+ */
 type DefaultMovement = FighterClient & {
 	remainingJumps: number;
 	dashed: boolean;
 	fastfalled: boolean;
 	canWavedash: boolean;
 	momentum: number;
-
-	// have this set becuase it checks like every heartbeat and jumping takes time lmao
 	previousHeartbeatGrounded: boolean;
 };
 
 const defaultMovementSettings: MovementSettings = {
 	fastFallSpeed: 50,
 	jumpSpeed: 60,
-	dashSpeed: 50,
+	airdashSpeed: 50,
 	walljumpBounceSpeed: 50,
 	wavedashSpeed: 20,
 	jumpAmount: 2,
-
-	groundedCheckDistance: 1,
-	walljumpCheckDistance: 3,
-	wavedashTimeWindow: 0.1,
-	momentumTimeWindow: 0.2,
 };
 
 const camera = Workspace.CurrentCamera as Camera;
 
+/**
+ * The function that returns the default movement for the characters.
+ * Intended to be extended. DO NOT make this an independent character.
+ */
 export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSettings> = (
 	character,
 	movementSettings = defaultMovementSettings,
@@ -88,7 +112,7 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 
 			const walljumpRay = Workspace.Raycast(
 				rootpart.Position,
-				humanoid.MoveDirection.mul(-movementSettings.walljumpCheckDistance),
+				humanoid.MoveDirection.mul(-walljumpCheckDistance),
 				characterCastParams,
 			);
 
@@ -125,15 +149,15 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 		airdash: () => {
 			if (!defaultMovement.dashed) {
 				rootpart.ApplyImpulse(
-					humanoid.MoveDirection.mul(movementSettings.dashSpeed * mass).add(
-						Vector3.yAxis.mul(camera.CFrame.LookVector.Y * movementSettings.dashSpeed * mass),
+					humanoid.MoveDirection.mul(movementSettings.airdashSpeed * mass).add(
+						Vector3.yAxis.mul(camera.CFrame.LookVector.Y * movementSettings.airdashSpeed * mass),
 					),
 				);
 
 				defaultMovement.dashed = true;
 
 				defaultMovement.canWavedash = true;
-				task.wait(movementSettings.wavedashTimeWindow);
+				task.wait(wavedashTimeWindow);
 				defaultMovement.canWavedash = false;
 			}
 		},
@@ -144,7 +168,7 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 			const groundCast = Workspace.Blockcast(
 				rootpart.CFrame,
 				new Vector3(2, 1, 1),
-				Vector3.yAxis.mul(-3 - movementSettings.groundedCheckDistance),
+				Vector3.yAxis.mul(-3 - groundedCheckDistance),
 				characterCastParams,
 			);
 
@@ -158,7 +182,7 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 				if (defaultMovement.canWavedash) {
 					rootpart.ApplyImpulse(humanoid.MoveDirection.mul(mass * movementSettings.wavedashSpeed));
 					defaultMovement.momentum = 75;
-					task.wait(movementSettings.momentumTimeWindow);
+					task.wait(momentumTimeWindow);
 					defaultMovement.momentum = 0;
 				}
 			}

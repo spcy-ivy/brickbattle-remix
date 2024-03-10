@@ -1,9 +1,8 @@
-// taken from https://github.com/littensy/slither/blob/6540d0fa974c2bc8945a3969968b9a4d267388a6/src/client/hooks/use-input-device.ts
-
 import { useEventListener } from "@rbxts/pretty-react-hooks";
 import { useState } from "@rbxts/react";
 import { UserInputService } from "@rbxts/services";
 
+/** The three devices that could be playing this game. */
 export type InputDevice = "keyboard" | "gamepad" | "touch";
 
 const getInputType = (inputType = UserInputService.GetLastInputType()): InputDevice | undefined => {
@@ -16,6 +15,11 @@ const getInputType = (inputType = UserInputService.GetLastInputType()): InputDev
 	}
 };
 
+/**
+ * Gets the last input type and returns an `InputDevice`.
+ *
+ * @see https://github.com/littensy/slither/blob/6540d0fa974c2bc8945a3969968b9a4d267388a6/src/client/hooks/use-input-device.ts
+ */
 export function useInputDevice() {
 	const [device, setDevice] = useState<InputDevice>(() => {
 		return getInputType() ?? "keyboard";

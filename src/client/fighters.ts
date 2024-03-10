@@ -1,4 +1,10 @@
 import { RunService, Workspace } from "@rbxts/services";
+import {
+	CharacterSettings,
+	MovementSettings,
+	defaultMovementSettings,
+	testCharacterSettings,
+} from "shared/characterSettings";
 import { Cleanup } from "shared/cleanup";
 import { playSound } from "shared/playSound";
 import { CharacterRigR6 } from "types/characterRigR6";
@@ -7,7 +13,6 @@ import { FighterClient } from "types/fighter";
 const groundedCheckDistance = 1;
 const walljumpCheckDistance = 3;
 const wavedashTimeWindow = 0.1;
-const momentumTimeWindow = 0.2;
 
 /**
  * A type definition for functions that take a character alongside some settings and return a FighterClient.
@@ -15,26 +20,7 @@ const momentumTimeWindow = 0.2;
  * @typeParam F - The type of the fighter that gets returned from the function.
  * @typeParam S - The settings for the fighter.
  */
-type CharacterInitializer<F extends FighterClient, S extends {}> = (character: CharacterRigR6, settings: S) => F;
-
-/**
- * The settings for the default movement system.
- *
- * @param fastFallSpeed - The downward velocity applied for fast falls.
- * @param jumpSpeed - The upward velocity applied for jumps.
- * @param airdashSpeed - The velocity applied for airdashes.
- * @param walljumpBounceSpeed - The velocity applied for walljumps.
- * @param wavedashSpeed - The velocity applied for wavedashes.
- * @param jumpAmount - The amount of jumps the character has.
- */
-type MovementSettings = {
-	fastFallSpeed: number;
-	jumpSpeed: number;
-	airdashSpeed: number;
-	walljumpBounceSpeed: number;
-	wavedashSpeed: number;
-	jumpAmount: number;
-};
+type CharacterInitializer<F extends FighterClient, S extends {}> = (character: CharacterRigR6, settings?: S) => F;
 
 /**
  * The default movement template for all other characters.
@@ -52,28 +38,21 @@ type DefaultMovement = FighterClient & {
 	dashed: boolean;
 	fastfalled: boolean;
 	canWavedash: boolean;
-	momentum: number;
+	wavedashTractionApplied: boolean;
 	previousHeartbeatGrounded: boolean;
-};
-
-const defaultMovementSettings: MovementSettings = {
-	fastFallSpeed: 50,
-	jumpSpeed: 60,
-	airdashSpeed: 50,
-	walljumpBounceSpeed: 50,
-	wavedashSpeed: 20,
-	jumpAmount: 2,
 };
 
 const camera = Workspace.CurrentCamera as Camera;
 
+// TODO: make a hitbox handler that sends a signal to the server to actually check for the hitbox
+
 /**
- * The function that returns the default movement for the characters.
+ * The function that returns the default behavior for the characters.
  * Intended to be extended. DO NOT make this an independent character.
  */
-export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSettings> = (
+export const defaults: CharacterInitializer<DefaultMovement, MovementSettings> = (
 	character,
-	movementSettings = defaultMovementSettings,
+	settings = defaultMovementSettings,
 ) => {
 	const cleanup = Cleanup();
 
@@ -96,11 +75,11 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 	});
 
 	const defaultMovement = {
-		remainingJumps: movementSettings.jumpAmount,
+		remainingJumps: settings.jumpAmount,
 		dashed: false,
 		fastfalled: false,
 		canWavedash: false,
-		momentum: 0,
+		wavedashTractionApplied: false,
 
 		// have this set becuase it checks like every heartbeat and jumping takes time lmao
 		previousHeartbeatGrounded: false,
@@ -116,32 +95,28 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 				characterCastParams,
 			);
 
-			rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
+			rootpart.ApplyImpulse(Vector3.yAxis.mul(-rootpart.AssemblyLinearVelocity.Y * mass));
 
 			if (walljumpRay) {
 				const sound = playSound("rbxassetid://142245269");
 				sound.TimePosition = 0.1;
 
 				rootpart.ApplyImpulse(
-					walljumpRay.Normal.mul(mass * movementSettings.walljumpBounceSpeed).add(
-						Vector3.yAxis.mul(mass * movementSettings.jumpSpeed),
+					walljumpRay.Normal.mul(mass * settings.walljumpBounceSpeed).add(
+						Vector3.yAxis.mul(mass * settings.jumpSpeed),
 					),
 				);
 				return;
 			}
 
-			rootpart.ApplyImpulse(
-				Vector3.yAxis
-					.mul(mass * movementSettings.jumpSpeed)
-					.add(humanoid.MoveDirection.mul(mass * defaultMovement.momentum)),
-			);
+			rootpart.ApplyImpulse(Vector3.yAxis.mul(mass * settings.jumpSpeed));
 			defaultMovement.remainingJumps--;
 		},
 
 		fastfall: () => {
 			if (!defaultMovement.fastfalled) {
-				rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
-				rootpart.ApplyImpulse(Vector3.yAxis.mul(-mass * movementSettings.fastFallSpeed));
+				rootpart.ApplyImpulse(Vector3.yAxis.mul(-rootpart.AssemblyLinearVelocity.Y * mass));
+				rootpart.ApplyImpulse(Vector3.yAxis.mul(-mass * settings.fastFallSpeed));
 				defaultMovement.fastfalled = true;
 			}
 		},
@@ -149,11 +124,10 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 		airdash: () => {
 			if (!defaultMovement.dashed) {
 				rootpart.ApplyImpulse(
-					humanoid.MoveDirection.mul(movementSettings.airdashSpeed * mass).add(
-						Vector3.yAxis.mul(camera.CFrame.LookVector.Y * movementSettings.airdashSpeed * mass),
+					humanoid.MoveDirection.mul(settings.airdashSpeed * mass).add(
+						Vector3.yAxis.mul(camera.CFrame.LookVector.Y * settings.airdashSpeed * mass),
 					),
 				);
-
 				defaultMovement.dashed = true;
 
 				defaultMovement.canWavedash = true;
@@ -175,15 +149,33 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 			const grounded = groundCast !== undefined;
 
 			if (grounded && !defaultMovement.previousHeartbeatGrounded) {
-				defaultMovement.remainingJumps = movementSettings.jumpAmount;
+				defaultMovement.remainingJumps = settings.jumpAmount;
 				defaultMovement.dashed = false;
 				defaultMovement.fastfalled = false;
 
 				if (defaultMovement.canWavedash) {
-					rootpart.ApplyImpulse(humanoid.MoveDirection.mul(mass * movementSettings.wavedashSpeed));
-					defaultMovement.momentum = 75;
-					task.wait(momentumTimeWindow);
-					defaultMovement.momentum = 0;
+					defaultMovement.canWavedash = false;
+					const ground = groundCast.Instance;
+					const previousProperties = ground.CustomPhysicalProperties;
+
+					// god this code is so bad
+					ground.CustomPhysicalProperties = new PhysicalProperties(
+						previousProperties ? previousProperties.Density : 0.7,
+						previousProperties ? previousProperties.Friction : 0,
+						previousProperties ? previousProperties.Elasticity : 0.5,
+						previousProperties ? previousProperties.FrictionWeight : 100,
+						previousProperties ? previousProperties.ElasticityWeight : 1,
+					);
+					defaultMovement.wavedashTractionApplied = true;
+
+					rootpart.ApplyImpulse(humanoid.MoveDirection.mul(mass * settings.wavedashSpeed));
+
+					task.wait(0.1);
+
+					if (defaultMovement.wavedashTractionApplied) {
+						ground.CustomPhysicalProperties = previousProperties;
+						defaultMovement.wavedashTractionApplied = false;
+					}
 				}
 			}
 
@@ -192,4 +184,15 @@ export const defaultMovement: CharacterInitializer<DefaultMovement, MovementSett
 	);
 
 	return defaultMovement;
+};
+
+export const testCharacter: CharacterInitializer<DefaultMovement, CharacterSettings> = (
+	character,
+	settings = testCharacterSettings,
+) => {
+	return {
+		...defaults(character),
+		// make the default handler detect if the hitbox was hit and send a remote event for server verification
+		// neutral_air: defaultfunctionorsomething(settings.neutral_air)
+	};
 };

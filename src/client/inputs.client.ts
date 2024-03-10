@@ -22,6 +22,12 @@ const directionBindings: Map<DirectionModifier, Enum.KeyCode> = new Map<Directio
 	["Down", Enum.KeyCode.R],
 ]);
 
+/**
+ * Gets the direction for digital (e.g keyboard) inputs.
+ * Direction should be used for attacks and movement.
+ *
+ * @returns DirectionModifier
+ */
 // vertical direction bindings are prioritized
 // god this code is so bad
 export function getDirectionModifier(): DirectionModifier | undefined {

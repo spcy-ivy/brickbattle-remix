@@ -1,8 +1,15 @@
 import React, { PropsWithChildren, createContext, useEffect } from "@rbxts/react";
 import { map, useCamera, useDebounceState, useEventListener } from "@rbxts/pretty-react-hooks";
 
-//taken from https://github.com/littensy/slither/blob/main/src/client/providers/rem-provider.tsx
-
+/**
+ * The properties for the `RemProvider` component.
+ *
+ * @see https://github.com/littensy/slither/blob/main/src/client/providers/rem-provider.tsx
+ * @param baseRem - The default rem to operate with.
+ * @param remOverride - The rem is set to this NO MATTER WHAT.
+ * @param minimumRem - Doesn't get below this NO MATTER WHAT.
+ * @param maximumRem - Doesn't get above this NO MATTER WHAT.
+ */
 export type RemProviderProps = PropsWithChildren & {
   baseRem?: number;
   remOverride?: number;
@@ -17,6 +24,11 @@ const MAX_ASPECT_RATIO = 19 / 9;
 
 export const RemContext = createContext<number>(DEFAULT_REM);
 
+/**
+ * A provider component that updates the values for the `rem` function.
+ *
+ * @see https://github.com/littensy/slither/blob/main/src/client/providers/rem-provider.tsx
+ */
 export function RemProvider({
   baseRem = DEFAULT_REM,
   minimumRem = MIN_REM,

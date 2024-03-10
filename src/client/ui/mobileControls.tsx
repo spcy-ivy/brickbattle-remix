@@ -2,6 +2,15 @@ import React from "@rbxts/react"
 import { useRem } from "./useRem";
 import { actionSignal } from "client/signals";
 
+/**
+ * The properties for the `Button` component. Should mostly cover the important properties for normal buttons.
+ *
+ * @param size - A number that dictates the rem size for both dimensions.
+ * @param offset - The offset from the bottom right corner of the screen.
+ * @param imageId - Self explanatory.
+ * @param color - The background color of the button.
+ * @param pressedEvent - Self explanatory.
+ */
 type ButtonProps = {
   size?: number,
   offset?: Vector2,
@@ -10,6 +19,11 @@ type ButtonProps = {
   pressedEvent?: () => void
 }
 
+/**
+ * A singular button for mobile controls.
+ *
+ * @param props - The properties for this component.
+ */
 export function Button({
   size = 10,
   offset = Vector2.one,
@@ -36,6 +50,9 @@ export function Button({
   )
 }
 
+/**
+ * The actual mobile buttons.
+ */
 export function MobileControls() {
   return (
     <>

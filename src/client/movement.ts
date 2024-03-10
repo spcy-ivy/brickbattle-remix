@@ -14,7 +14,6 @@ const jumpAmount = 2;
 const groundedCheckDistance = 1;
 const walljumpCheckDistance = 3;
 const wavedashTimeWindow = 0.1;
-const momentumTimeWindow = 0.2;
 
 const cleanup = Cleanup();
 
@@ -40,7 +39,7 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 	let dashed = false;
 	let fastfalled = false;
 	let canWavedash = false;
-	let momentum = 0;
+	let wavedashTractionApplied = false;
 
 	// have this set becuase it checks like every heartbeat and jumping takes time lmao
 	let previousHeartbeatGrounded = false;
@@ -69,10 +68,28 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 				fastfalled = false;
 
 				if (canWavedash) {
+					canWavedash = false;
+					const ground = groundCast.Instance;
+					const previousProperties = ground.CustomPhysicalProperties;
+
+					// god this code is so bad
+					ground.CustomPhysicalProperties = new PhysicalProperties(
+						previousProperties ? previousProperties.Density : 0.7,
+						previousProperties ? previousProperties.Friction : 0,
+						previousProperties ? previousProperties.Elasticity : 0.5,
+						previousProperties ? previousProperties.FrictionWeight : 100,
+						previousProperties ? previousProperties.ElasticityWeight : 1,
+					);
+					wavedashTractionApplied = true;
+
 					rootpart.ApplyImpulse(humanoid.MoveDirection.mul(mass * wavedashSpeed));
-					momentum = 75;
-					task.wait(momentumTimeWindow);
-					momentum = 0;
+
+					task.wait(0.1);
+
+					if (wavedashTractionApplied) {
+						ground.CustomPhysicalProperties = previousProperties;
+						wavedashTractionApplied = false;
+					}
 				}
 			}
 
@@ -84,7 +101,7 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 		actionSignal.connect((action) => {
 			if (action === "FastFall") {
 				if (!fastfalled) {
-					rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
+					rootpart.ApplyImpulse(Vector3.yAxis.mul(-rootpart.AssemblyLinearVelocity.Y * mass));
 					rootpart.ApplyImpulse(Vector3.yAxis.mul(-mass * fastFallSpeed));
 					fastfalled = true;
 				}
@@ -116,7 +133,7 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 					characterCastParams,
 				);
 
-				rootpart.AssemblyLinearVelocity = rootpart.AssemblyLinearVelocity.mul(Vector3.yAxis.mul(0));
+				rootpart.ApplyImpulse(Vector3.yAxis.mul(-rootpart.AssemblyLinearVelocity.Y * mass));
 
 				if (walljumpRay) {
 					const sound = playSound("rbxassetid://142245269");
@@ -128,9 +145,7 @@ player.CharacterAppearanceLoaded.Connect((model) => {
 					return;
 				}
 
-				rootpart.ApplyImpulse(
-					Vector3.yAxis.mul(mass * jumpSpeed).add(humanoid.MoveDirection.mul(mass * momentum)),
-				);
+				rootpart.ApplyImpulse(Vector3.yAxis.mul(mass * jumpSpeed));
 				remainingJumps--;
 			}
 		}),
